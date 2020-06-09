@@ -25,7 +25,8 @@ let client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: t
 app.get('/products', (req, res) => {
     client.connect(err => {
         const collection = client.db("onlineStore").collection("products");
-        collection.find().limit(10).toArray((err, document) => {
+        // collection.find().limit(10).toArray((err, document) => {
+        collection.find().toArray((err, document) => {
             if (err) {
                 console.log('failed to load data');
                 res.send({ message: err });
@@ -39,17 +40,61 @@ app.get('/products', (req, res) => {
 
 })
 
-//user
-const user = ['Rahima', 'Karima', 'Shujon', 'Polash', 'Tomalika', 'Onamika']
 
-app.get('/user/:userId', (req, res) => {
+app.get('/products/:key', (req, res) => {
     // console.log(req.params)
-    const id = req.params.userId;
-    const userName = user[id];
-    console.log(req.query);
-    console.log(req.query.sort)
-    res.send({ id, userName })
+    const key = req.params.key;
+    client.connect(err => {
+        const collection = client.db("onlineStore").collection("products");
+        collection.find({ key }).toArray((err, document) => {
+            if (err) {
+                console.log('failed to load data');
+                res.send({ message: err });
+            } else {
+                // console.log(document)
+                res.send(document[0]);
+            }
+        })
+    })
+
 });
+
+//for loading data for review page
+app.post('/getProductByKey', (req, res) => {
+    const productKey = req.body;
+    console.log(productKey);
+    client.connect(err => {
+        const collection = client.db("onlineStore").collection("products");
+        collection.find({ key: { $in: productKey } }).toArray((err, documents) => {
+            if (err) {
+                console.log('failed to load data');
+                res.send({ message: err });
+            } else {
+                // console.log(document)
+                res.send(documents);
+            }
+        })
+    })
+
+})
+
+// posting user email and cart (placeOrder)
+app.post('/placeOrder', (req, res) => {
+    const orderDetails = req.body;
+    orderDetails.orderTime = new Date();
+    console.log(orderDetails)
+    client.connect(err => {
+        const collection = client.db("onlineStore").collection("orders");
+        collection.insertOne(orderDetails, (error, result) => {
+            if (error) {
+                console.log(error);
+                res.send({ message: error });
+            } else {
+                res.send(result.ops[0]);
+            }
+        })
+    })
+})
 
 //API for courses
 const courses = [
@@ -72,7 +117,7 @@ app.post('/addProducts', (req, res) => {
     const product = req.body;
     client.connect(err => {
         const collection = client.db("onlineStore").collection("products");
-        collection.insertOne(product, (err, result) => {
+        collection.insertMany(product, (err, result) => {
             if (err) {
                 console.log(err);
                 res.status(500).send({ message: err });
