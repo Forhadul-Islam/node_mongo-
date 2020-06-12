@@ -15,13 +15,11 @@ app.use(bodyParser.json())
     })
 
 // database connection
-const dbUser = process.env.DB_USER;
-const pass = process.env.DB_PASS;
-const uri = `mongodb+srv://${dbUser}:${pass}@cluster0-bs7e4.mongodb.net/onlineStore?retryWrites=true&w=majority`;
+const uri = process.env.DB_PATH;
 let client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 
 
-//Products route
+//Loading data(products) from database for home page 
 app.get('/products', (req, res) => {
     client.connect(err => {
         const collection = client.db("onlineStore").collection("products");
@@ -31,7 +29,6 @@ app.get('/products', (req, res) => {
                 console.log('failed to load data');
                 res.send({ message: err });
             } else {
-                // console.log(document)
                 res.send(document);
             }
         })
@@ -51,7 +48,6 @@ app.get('/products/:key', (req, res) => {
                 console.log('failed to load data');
                 res.send({ message: err });
             } else {
-                // console.log(document)
                 res.send(document[0]);
             }
         })
@@ -107,13 +103,12 @@ app.get('/course/:id', (req, res) => {
     const course = courses.find(c => c.id === parseInt(req.params.id));
     if (!course) res.status(404).send('The course you wanted is not found');
     else res.send(course);
-    // res.send(course)
 });
 
 //post data
 
 app.post('/addProducts', (req, res) => {
-    console.log("data recieved", req.body);
+    // console.log("data received", req.body);
     const product = req.body;
     client.connect(err => {
         const collection = client.db("onlineStore").collection("products");

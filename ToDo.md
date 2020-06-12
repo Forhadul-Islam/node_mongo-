@@ -1,0 +1,7 @@
+- npm initialization (npm init)
+- install express js (reading the documentation)
+- set necessary middleWires (i.e., cors, body-parse)
+- set environment variable using DotEnv (create .env file)
+- install mongodb atlas to your project
+- now feel free to create your APIs
+-
